@@ -1,5 +1,5 @@
 .data
-	mensaje_ingrese: .asciz "Ingrese una palabra de x letras:\n"
+	mensaje_ingrese: .asciz "Ingrese una palabra de x letras:"
         mensaje_mas_letras: .asciz "La palabra ingresada es mas larga a la buscada, intentelo de nuevo\n"
         mensaje_menos_letras: .asciz "La palabra ingresada es mas corta a la buscada, intentelo de nuevo\n"
         mensaje_puntaje_ganaste: .asciz "Adivinaste la palabra! Tu puntaje actual es xxx\n"
@@ -7,16 +7,20 @@
 	mensaje_seguir_jugando: .asciz "Desea seguir jugando?\n"
 	
 	mensaje_comienzo_juego: .asciz "Bienvenido a W O R D L E!\nEl objetivo del juego es adivinar una palabra en un total de 5 intentos\nDeberá ingresar una palabra del largo indicado, y se le mostrará la palabra ingresada con las letras de tres colores:\n"
-	
 	mensaje_comienzo_verde: .asciz "Verde: Si la letra está verde, significa que está en la palabra a adivinar y que además está en la posición correcta\n"
-
 	mensaje_comienzo_amarillo: .asciz "Amarillo: Si la letra es amarilla, significa que está en la palabra a adivinar, pero no está en la posición correcta\n"
-	
 	mensaje_comienzo_rojo: .asciz "Rojo: Si la letra es roja, significa que no está en la palabra a adivinar\n"
+        mensaje_verificar_intentos: .asciz "Tiene x intentos restantes\n"
+        
+	mensaje_ingrese_nombre: .asciz "Ingrese su nombre: "
+    	mensaje_ing_nombre_length= . -mensaje_ingrese_nombre
+    	mensaje_ranking_de_jugadores: .asciz "--- Ranking de jugadores ---\n"
+   	mensaje_ranking_length= . -mensaje_ranking_de_jugadores	
 	espacio12: .space 200
 	guardar:           .space 100
-	colores:           .space 5    @ Guardo en las posiciones el color que corresponda y lo identifico como V,A,R
+	colores:           .space 5    	   //Guardo en las posiciones el color que corresponda y lo identifico como V,A,R
 		
+	
 	archivo: .asciz "palabras.txt"
         vector: .asciz ""                  //quedan todos las palabras del txt
 	espacio: .zero 10
@@ -29,6 +33,7 @@
         espacio4: .zero 10
         letras_palabra_usuario: .byte 0
 	espacio5: .space 50
+
 	puntaje: .byte 0
 	espacio6: .space 10
 	puntaje_ascii: .asciz ""
@@ -50,23 +55,21 @@
 	color_rojo:        .asciz "\033[31m"
 	salto_linea:       .asciz "\n"
 		
-	filename: .asciz "ranking.txt"          @ Nombre del archivo
-    	buffer:   .space 200                     @ Buffer para lectura (200 bytes por línea)
+	filename: .asciz "ranking.txt"              @ Nombre del archivo
+    	buffer:   .space 200                        @ Buffer para lectura (200 bytes por l�nea)
     	bufferLength= . - buffer
-
-    	ranking1: .space 22                     @ Espacio para los datos de ranking1
-    
-    	rankingActual:  .space 22               @ Buffer para almacenar el ranking formateado
+    	ranking1: .space 22                         @ Espacio para los datos de ranking1
+    	nombre:         .space 19                   @ Buffer para el nombre (m�x. 19 bytes)
+    	rankingActual:  .space 22                   @ Buffer para almacenar el ranking formateado
     	rankingLength:   .word 22
-
-    	nombre:         .space 19               @ Buffer para el nombre (máx. 19 bytes)
-    	valor:          .space 3                @ Buffer para el valor (3 caracteres)
-
     	txtRankingActual:   .asciz "Ranking actual\n"
-    	lengthTxtRA= . - txtRankingActual    
+    	lengthTxtRA= . - txtRankingActual 
+	espacio13: .space 20  
+
+
 
 .text
-@------------INICIAMOS JUEGO CON MENSAJE DE BIENVENIDA--------------
+//------------INICIAMOS JUEGO CON MENSAJE DE BIENVENIDA--------------
 
 	imprime_mensaje_comienzo_juego:
         .fnstart
@@ -120,11 +123,11 @@
 			swi 0
 	                bx lr
         .fnend
-@-------------------------------------------------------------------
+//-------------------------------------------------------------------
 
 
 
-@------------------INICIO LECTURA-CIERRE ARCHIVO--------------------
+//------------------INICIO LECTURA-CIERRE ARCHIVO--------------------
 
         abrirArchivo:                           	//abre el archivo txt con las palabras
         .fnstart
@@ -152,7 +155,7 @@
                 swi 0
                 bx lr
         .fnend
-@-------------------FIN LECTURA-CIERRE ARCHIVO------------------------
+//---------------------------------------------------------------
 
 
 
@@ -223,13 +226,13 @@
         .fnend
 
 
-@------------CODIGO PARA INGRESAR-LEER-MODIFICAR 'x'-----------------------
+//------------CODIGO PARA INGRESAR-LEER-MODIFICAR 'x'-----------------------
 
 	ingrese_palabra:
         .fnstart
                 mov r7, #4
                 mov r0, #1
-                mov r2, #32				//largo del mensaje
+                mov r2, #33				//largo del mensaje
                 ldr r1, =mensaje_ingrese		//puntero al mensaje para que el usuario ingrese una palabra
                 swi 0
                 bx lr
@@ -246,7 +249,7 @@
         .fnend
 
 
-	@ CUANDO ENCUENTRE UNA 'X' MODIFICO EL MENSAJE POR EL N� DE LETRAS
+       //CUANDO ENCUENTRE UNA 'X' MODIFICO EL MENSAJE POR EL N� DE LETRAS
        modifica_mensaje_ingrese:
         .fnstart
                 ldr r0, =mensaje_ingrese		//cargo el puntero del mensaje para que el usuario ingrese una palabra
@@ -263,33 +266,10 @@
                                                 	//resto 1 para volver a la posicion del x
                         bx lr
         .fnend
-@----------------------------FIN DE CODIGO---------------------------------------------
-
-
-        
-       mensaje_mas_largo:
-        .fnstart
-                mov r7, #4
-                mov r0, #1
-                mov r2, #67				//largo del mensaje
-                ldr r1, =mensaje_mas_letras		//puntero al mensaje que sale si la palabra es mas larga de lo indicado
-                swi 0
-                bx lr
-        .fnend
-
-        mensaje_mas_corto:
-        .fnstart
-                mov r7, #4
-                mov r0, #1
-                mov r2, #67				//largo del mensaje
-                ldr r1, =mensaje_menos_letras		//puntero al mensaje que sale si la palabra es mas corta de lo indicado
-                swi 0
-                bx lr
-        .fnend
-
+//------------------------------------------------------------------------
 	
 
-@--------------INICIO CODIGO PARA LOS COLORES----------------------------
+//--------------INICIO CODIGO PARA LOS COLORES----------------------------
         
 	informar_resultado:
     	.fnstart
@@ -306,13 +286,13 @@
 		    cmp r8, r6                  	//comparo el puntero V con el largo de la palabra a adivinar
 		    beq fin_informar_resultado  	// si llego al final salgo
 
-		@------------verde-------------
+		//------------verde-------------
 		    ldrb r0, [r4, r8]			//cargo la primer letra de la palabra del usuario
 		    ldrb r1, [r5, r8]			//cargo la primer letra de la palabra a adivinar
 		    cmp r0, r1				//comparo la letra del usuario con la letra de la palabra a adivinar
 		    beq clasificar_verde        	//si son iguales salta
 
-		@------------amarilla----------
+		//------------amarilla----------
 		    mov r9, #0                   	//si vengo aca, no es V
 		buscar_amarilla:
 		    cmp r9, r6                   	//cmp puntero A con length
@@ -352,7 +332,7 @@
 
 
 
-	@ Cambia el color del texto a imprimir
+	//Cambia el color del texto a imprimir
 	cambiar_color:					//cambia el color en el cual se impreme segun corresponda a la letra
     	.fnstart
 		 push {lr}
@@ -363,11 +343,11 @@
 	.fnend
 
 	
-	@ Imprime cada letra del usuario con su color correspondiente
+	//Imprime cada letra del usuario con su color correspondiente
 	imprimir_resultado:
 	.fnstart
 		push {lr}
-		mov r3, #0      @ Iterador
+		mov r3, #0                              //Iterador
 		ldr r4, =letras_palabra_usuario
 		ldrb r4, [r4]
 
@@ -417,12 +397,41 @@
 			bx lr
 	.fnend
 
+//-------------------INICIO CODIGO PARA VERIFICAR INTENTOS----------------
 
-@--------------------FIN CODIGO COLORES----------------------------
+        verificar_intentos:
+        .fnstart
+                ldr r0, =intentos                       //cargo puntero a la cantidad de intentos
+                ldrb r1, [r0]                           //cargo los intentos
+                add r1, #0x30                           //sumo 0x30 para convertir a ascii
+                ldr r0, =mensaje_verificar_intentos     //cargo puntero al mensaje
+                mov r2, #6                              //cargo la posición de la x donde tengo que poner el numero
+                modifico_mensaje_intentos:
+                        strb r1, [r0, r2]               //guardo la cantidad de intentos en el mensaje
+                        push {r0,r2,lr}
+                        bl imprimo_mensaje_intentos     //imprimo el mensaje
+                        pop {r0,r2,lr}
+                        mov r1, #'x'                    //guardo la x en r1
+                        strb r1, [r0, r2]               //restauro la x en la posicíón donde ahora están los intentos
+                        bx lr
+        .fnend
+
+        imprimo_mensaje_intentos:                       //interrupción para imprimir los intentos restantes en pantalla
+        .fnstart
+                mov r7, #4
+                mov r0, #1
+                mov r2, #28                             //largo del mensaje
+                ldr r1, =mensaje_verificar_intentos     //puntero al mensaje
+                swi 0
+                bx lr
+        .fnend
+
+
+//------------------------------------------------------------------------
 
 
 
-@ Imprime un mensaje por pantalla
+//------------------------IMPRIMIR----------------------------------------
 	imprimir:
 	.fnstart
 		push {lr}
@@ -433,10 +442,30 @@
 		bx lr
 	.fnend
 
+ mensaje_mas_largo:
+        .fnstart
+                mov r7, #4
+                mov r0, #1
+                mov r2, #67				//largo del mensaje
+                ldr r1, =mensaje_mas_letras		//puntero al mensaje que sale si la palabra es mas larga de lo indicado
+                swi 0
+                bx lr
+        .fnend
+
+        mensaje_mas_corto:
+        .fnstart
+                mov r7, #4
+                mov r0, #1
+                mov r2, #67				//largo del mensaje
+                ldr r1, =mensaje_menos_letras		//puntero al mensaje que sale si la palabra es mas corta de lo indicado
+                swi 0
+                bx lr
+        .fnend
+//-----------------------------------------------------------------------
 
 
 
-@-------------------INICIO CODIGO PARA PUNTOS----------------------------	
+//-------------------INICIO CODIGO PARA PUNTOS----------------------------	
         calcula_puntos:
         .fnstart
                 ldr r0, =intentos			//cargo puntero a intentos
@@ -552,13 +581,13 @@
 		bx lr
 	.fnend
 
-@-----------------------FIN CODIGO PUNTOS--------------------------
+//-----------------------------------------------------------------
 
 
 
 
 
-@-----------------------CODIGO PARA VOLVER A JUGAR-----------------
+//-----------------------CODIGO PARA VOLVER A JUGAR-----------------
 	
 	reinicia_mensaje_ingrese:			//restauro la x en el mensaje
 	.fnstart
@@ -621,12 +650,12 @@
             	beq fin                     		// Si es 'n', termina el programa
             	bal leer_entrada            		// Si no es 's' ni 'n', vuelve a pedir entrada
 
-@------------------------------------------------------------------
+//------------------------------------------------------------------
 
 
 
 
-@---------------------------RANDOM---------------------------------
+//---------------------------RANDOM---------------------------------
 	myrand:
         .fnstart
                 push {lr}
@@ -662,372 +691,304 @@
 		mov r0, #1
 		mov r2, #10
 		ldr r1, =palabra_random
-		swi 0
-		
-		mov r7,#4
-		mov r0,#1
-		mov r2,#10
-		ldr r1, =salto_linea
-		swi 0
-		bx lr
+		swi 0	
 	.fnend
-@-----------------------------------------------------------------
+//-------------------------------------------------------------------
 
-@-----------------------RANKING-----------------------------------
 
-	@ Subrutina para pedir el nombre
-	pedir_nombre:
-	.fnstart
-    		push {r0, r1, r2, r7, lr}              @ Guarda registros usados
+//-----------------------NOMBRE DEL USUARIO--------------------------
 
-    		mov r0, #0                             @ Leer desde stdin
-    		ldr r1, =nombre                        @ Buffer donde almacenar el nombre
-    		ldr r2, =rankingLength                  @ Longitud máxima permitida
-    		ldr r2, [r2]
-    		mov r7, #3
-    		swi 0                                  @ Syscall: Leer entrada
 
-   	@ bl eliminar_salto_linea                @ Llama a subrutina para eliminar '\n'
+//Subrutina pedir el nombre r1:puntero buffer y r2:longitud del buffer son parametros
+        imprimir_por_consola:
+        .fnstart
+                push {r0, r7, lr}                       // Guarda registros usados
 
-    		pop {r0, r1, r2, r7, lr}               @ Restaura registros
-    		bx lr                                  @ Retorna
-	.fnend
+                mov r0, #1                              // Imprimir
+                mov r7, #4
+                swi 0
 
+                pop {r0, r7, lr}                        // Restaura registros
+                bx lr                                   // Retorna
+        .fnend
 
 
-@ Subrutina para pedir el valor
-	pedir_valor:
-	.fnstart
-    		push {r0, r1, r2, r7, lr}              @ Guarda registros usados
 
-    		mov r0, #0                             @ Leer desde stdin
-    		ldr r1, =valor                         @ Buffer donde almacenar el valor
-   		mov r2, #4                             @ Longitud máxima permitida (4 bytes)
-    		mov r7, #3
-    		swi 0                                  @ Syscall: Leer entrada
+        // Subrutina para ingresar el nombre
+        ingresar_nombre:
+        .fnstart
+                push {r0, r1, r2, r7, lr}              // Guarda registros usados
 
-    		bl eliminar_salto_linea                @ Llama a subrutina para eliminar '\n'
+                mov r0, #0                             // Leer
+                ldr r1, =nombre                        // Buffer donde almacenar el nombre
+                ldr r2, =rankingLength                 // Longitud m�xima permitida
+                ldr r2, [r2]
+                mov r7, #3
+                swi 0                                  // Syscall: Leer entrada
 
-    		pop {r0, r1, r2, r7, lr}               @ Restaura registros
-    		bx lr                                  @ Retorna
-	.fnend
+                pop {r0, r1, r2, r7, lr}               // Restaura registros
+                bx lr                                  // Retorna
+        .fnend
 
 
+//---------------------------------------------------------------------
 
-	@ Subrutina para eliminar el carácter '\n'
-	eliminar_salto_linea:
-	.fnstart
-    		push { r1, r2 ,r3 , lr}                @ Guarda registros usados y LR
 
-    		mov r2, #0                             @ Índice inicial
-		buscar_salto:
-    		ldrb r3, [r1, r2]                      @ Leer un byte del buffer
-    		cmp r3, #10                            @ Comparar con '\n'
-    		beq reemplazar                         @ Si es '\n', reemplazarlo
-    		cmp r3, #0                             @ Si es terminador null, finalizar
-    		beq fin_eliminar_salto
-    		add r2, r2, #1                         @ Incrementar índice
-    		b buscar_salto                         @ Continuar buscando
 
-		reemplazar:
-    		mov r3, #0                             @ Cargar terminador null ('\0')
-    		strb r3, [r1, r2]                      @ Sobrescribir el '\n' con '\0'
-
-	fin_eliminar_salto:
-    		pop { r1, r2 ,r3 , lr}                 @ Restaura registros usados y LR
-    		bx lr                                  @ Retorna
-	.fnend
-
-
-
-	@ Subrutina para formatear rankingActual
-	formato_ranking_actual:
-	.fnstart
-    		push {r0, r1, r2, r3, lr}              @ Guarda registros usados, incluyendo LR
-
-    		ldr r0, =rankingActual                 @ Dirección del buffer de rankingActual
-    		ldr r2, =nombre
+//---------------------------RANKING-----------------------------------
 
-    		ldr r3, =rankingLength
-    		ldr r3, [r3]
-    		sub r3, #3
-    		bl copiar_nombre_con_puntos            @ Copia el nombre alineado a la derecha con puntos
-
-    		ldr r0, =rankingActual                 @ Reinicia el puntero al inicio del buffer
-    		ldr r1, =valor                         @ Dirección del valor
-    		mov r3, #3                             @ Longitud del valor (3 caracteres)
-    		bl copiar_valor                        @ Copia los 3 caracteres del valor al inicio
-
-    		pop {r0, r1, r2, r3, lr}               @ Restaura registros, incluyendo LR
-    		bx lr                                  @ Retorna
-	.fnend
-
-
-
-	@ Subrutina para copiar el valor al buffer
-	copiar_valor:
-	.fnstart
-    		push {r0, r1, r3, r4 ,lr}              @ Guarda LR antes de cualquier llamada
-
-		copiar_valor_loop:
-    		ldrb r4, [r1], #1                      @ Lee un byte del valor y avanza
-    		strb r4, [r0], #1                      @ Escribe el byte en el destino y avanza
-    		subs r3, r3, #1                        @ Decrementa el contador
-    		bne copiar_valor_loop                  @ Repite si no ha terminado
-
-    		pop {r0, r1, r3, r4 ,lr}               @ Restaura LR
-    		bx lr                                  @ Retorna
-	.fnend
-
-
-	@ Subrutina para copiar el nombre al buffer con puntos
-	copiar_nombre_con_puntos:
-	.fnstart
-    		push {r0, r1, r2, r3, r4, r5, r6, lr}   @ Guarda registros usados, incluyendo LR
-
-    		mov r1, r2                              @ R1 apunta al nombre (R2 contiene la dirección del nombre)
-    		mov r4, #0                              @ Índice para contar la longitud del nombre
-
-		contar_nombre:
-    		ldrb r5, [r1, r4]                       @ Lee un byte del nombre
-    		cmp r5, #'\n'                           @ Comprueba si es el salto de línea
-   		beq rellenar_puntos                     @ Salta si encuentra el salto de línea
-    		add r4, r4, #1                          @ Incrementa la longitud
-    		cmp r4, r3                              @ Compara con el límite de 19 (espacio disponible)
-    		blt contar_nombre                       @ Continúa si no ha llegado al límite
-
-		rellenar_puntos:
-    		sub r5, r3, r4                          @ Calcula cuántos puntos necesita (r3 es 19)
-		rellenar_puntos_loop:
-    		subs r5, r5, #1                         @ Decrementa el contador de puntos
-    		mov r6, #'.'                            @ Carga el carácter punto
-    		strb r6, [r0], #1                       @ Escribe un punto en el destino
-    		bge rellenar_puntos_loop                @ Repite si aún quedan puntos por escribir
-
-		copiar_nombre_loop:
-    		ldrb r6, [r1], #1                       @ Lee un byte del nombre
-    		cmp r6, #'\n'                           @ Comprueba si es el salto de línea
-    		beq copiar_salto_fin                    @ Salta para copiar el salto de línea
-    		strb r6, [r0], #1                       @ Escribe el byte en el destino
-    		subs r3, r3, #1                         @ Decrementa la longitud disponible
-    		bgt copiar_nombre_loop                  @ Continúa si aún hay espacio
-
-		copiar_salto_fin:
-   		strb r6, [r0], #1                       @ Copia el salto de línea (`\n`) al destino
-
-		copiar_nombre_fin:
-   
-    		pop {r0, r1, r2, r3, r4, r5, r6, lr}    @ Restaura registros
-    		bx lr                                   @ Retorna
-	.fnend
-
-
-
-	imprimir_ranking_actual:
-	.fnstart
-    		push {r0, r1, r2, r7, lr}               @ Guarda en la pila los registros r0, r1, r2, r7 y lr. 
-                                    
-    		mov r0, #1                              @ Configura r0 .                
-    		ldr r1, =txtRankingActual               @ Carga en r1 la dirección de la variable `txtRankingActual`, que contiene los datos a imprimir.
-    		ldr r2, =lengthTxtRA                    @ Carga en r2 la dirección de la variable `lengthTxtRA`, que almacena el tamaño del buffer.
-    		mov r7, #4  
-    		swi 0                                   @ Llama al sistema operativo para ejecutar la syscall.
-
-    		mov r0, #1                           
-    		ldr r1, =rankingActual                  @ Carga en r1 la dirección de la variable `rankingActual`, que contiene los datos a imprimir.
-    		ldr r2, =rankingLength                   @ Carga en r2 la dirección de la variable `rankingLength`, que almacena el tamaño del buffer.
-    		ldr r2, [r2]                            @ Carga el valor de `rankingLength` desde la memoria en r2 (número de bytes a imprimir).                             	@ Syscall número 4 (escribir datos).
-    		mov r7, #4  
-    		swi 0                                  
-
-    		pop {r0, r1, r2, r7, lr}                @ Restaura los valores originales de los registros r0, r1, r2, r7 y lr desde la pila.
-    		bx lr                                   @ Retorna al llamador usando la dirección almacenada en lr.
-	.fnend
-
-
-
-	@ Leer el archivo y cargar buffer
-	cargar_buffer:
-	.fnstart
-    		push { r0, r1, r2, r4, r7, lr}
-    		@ Abrir el archivo
-    		ldr r0, =filename                   @ Dirección del nombre del archivo
-    		mov r1, #0                          @ Modo de apertura: lectura
-    		mov r7, #5                          @ Syscall 
-    		swi 0                               @ Llama al sistema operativo
-    		mov r4, r0                          @ Guarda el descriptor del archivo en r4
-
-    		@ Leer el contenido en el buffer
-    		mov r0, r4                          @ Descriptor del archivo
-    		ldr r1, =buffer                     @ Dirección del buffer
-    		ldr r2, =bufferLength               @ Tamaño máximo a leer
-    		mov r7, #3                          @ Syscall 
-    		swi 0                               @ Llama al sistema operativo
-
-    		@ Cerrar el archivo
-    		mov r0, r4                          @ Descriptor del archivo a cerrar
-   		mov r7, #6                          @ Syscall 
-    		swi 0                               @ Llama al sistema operativo
-
-    		pop { r0, r1, r2, r4, r7, lr}
-    		bx lr                               @ Retorna de la subrutina
-	.fnend
-
-
-
-	incrementar_ranking_al_buffer:
-	.fnstart
-    		push {r0, r1, r2, r3, r4, lr}      @ Guarda registros usados, incluyendo LR
-
-    		ldr r0, =buffer                    @ R0 apunta al inicio del buffer
-    		mov r1, r0                         @ R1 será el puntero para encontrar el final
-
-		encontrar_final_buffer:
-    		ldrb r2, [r1], #1                  @ Lee un byte y avanza el puntero
-    		cmp r2, #0                         @ Comprueba si es el terminador nulo
-    		bne encontrar_final_buffer         @ Continúa si no ha encontrado el terminador
-
-    		sub r1, r1, #1                     @ Corrige el puntero (última posición válida antes del nulo)
-
-    		ldr r3, =rankingActual             @ R3 apunta al inicio de rankingActual
-
-		copiar_ranking_actual:
-    		ldrb r2, [r3], #1                  @ Lee un byte de rankingActual
-    		cmp r2, #0                         @ Comprueba si es el terminador nulo
-    		beq terminar_copia                 @ Salta si ha terminado de copiar
-
-    		strb r2, [r1], #1                  @ Copia el byte al buffer y avanza
-    		b copiar_ranking_actual            @ Repite el ciclo
-
-		terminar_copia:
-
-    		pop {r0, r1, r2, r3, r4, lr}       @ Restaura registros
-    		bx lr                              @ Retorna
-	.fnend
-
-
-	modificar_buffer_con_3_ultimos:
-	.fnstart
-   		push {r0, r2, r3, r4, r5, r6, lr}           @ Guarda registros usados y enlace
-    		ldr r4, =buffer                     @ r4 apunta al inicio del buffer
-    		bl calcular_longitud_del_buffer
-    		mov r5, r2                          @ r5 contiene el tamaño del buffer (parámetro pasado en r2)
-    		mov r2, #0                          @ r2 llevará el contador de saltos de línea encontrados
-    		mov r3, #0                          @ r3 llevará el índice del cuarto salto de línea desde el final
-
-		contar_saltos:
-    		subs r5, r5, #1                     @ Decrementa el tamaño del buffer (recorremos desde el final)
-    		blt fin_conteo                      @ Si hemos recorrido todo el buffer, salir
-    		ldrb r6, [r4, r5]                   @ Carga el byte actual desde el buffer
-    		cmp r6, #10                         @ Compara el byte con el carácter de salto de línea ('\n')
-    		bne contar_saltos                   @ Si no es un salto de línea, continúa contando
-    		add r2, r2, #1                      @ Incrementa el contador de saltos de línea encontrados
-    		cmp r2, #4                          @ ¿Es el cuarto salto de línea?
-    		bne contar_saltos                   @ Si no, sigue contando
-    		mov r3, r5                          @ Guarda el índice del cuarto salto de línea desde el final
-    		b fin_conteo                        @ Finaliza el conteo
-
-		fin_conteo:
-    		cmp r2, #4                          @ ¿Encontramos al menos 4 saltos de línea?
-    		blt retornar                        @ Si no, no hay nada que modificar
-
-		modificar_buffer:           
-    		add r6, r5, #1                      @ Sumamos una posición
-    		ldr r5, =buffer                     @ r5 apunta al inicio del buffer original
-    		add r6, r5                          @ Simamos el puntero con el arranque del recorte
-
-		sobreescribir:
-    		ldrb r0, [r6], #1                   @ Carga un byte desde el nuevo contenido
-    		strb r0, [r5], #1                   @ Sobrescribe el buffer original
-    		cmp r0, #0                          @ Verifica si es el final del buffer (carácter nulo)
-    		bne sobreescribir                   @ Continúa sobrescribiendo mientras no sea el final
-
-    		mov r0, #10
-    		strb r0, [r5], #1                       @ Sumamos un caracter nulo 
-
-    		mov r0, #0
-    		strb r0, [r5], #1                       @ Sumamos un caracter nulo      
-
-		retornar:
-    		pop {r0, r2, r3, r4, r5, r6, lr}            @ Restaura registros
-    		bx lr                               @ Retorna
-	.fnend
-
-
-
-		imprimir_rankings:
-		.fnstart
-
-   	 	mov r0, #1                           
-    		ldr r1, =buffer                    @ Carga en r1 la dirección de la variable `rankingActual`, que contiene los datos a imprimir.
-    		ldr r2, =bufferLength              @ Carga en r2 la dirección de la variable `rankingLength`, que almacena el tamaño del buffer.
-    		mov r7, #4
-    		swi 0  
-    		bx lr
-	.fnend
-
-
-
-	modificar_rankings:
-	.fnstart
-    		push {r0, r1, r2, r6, r7, lr}        @ Guarda registros usados y LR
-
-    		ldr r0, =filename                    @ Dirección del nombre del archivo
-    		mov r1, #2                           @ Modo lectura/escritura (2)
-    		mov r2, #438                         @ Permisos (0666 en octal, pero no se usa para lectura/escritura)
-    		mov r7, #5                           @ Syscall: open
-    		swi 0                                @ Llama al sistema operativo para abrir el archivo
-    
-    		mov r6, r0                           @ Guardar el descriptor del archivo en r6
-
-
-    		@ Sobrescribir el archivo con el nuevo contenido del buffer
-   		mov r0, r6                            @ Descriptor del archivo
-    		ldr r1, =buffer                       @ Dirección del buffer
-    		bl calcular_longitud_del_buffer       @ En r2 queda la longitud del buffer
-
-    		escribir_archivo:
-       		mov r7, #4                       @ Syscall: `write` (4 en ARM Linux)
-        	swi #0
-
-    		mov r7, #4                            @ Syscall: write
-    		swi 0                                 @ Llama al sistema operativo para escribir el contenido modificado
-
-    		@ Cerrar el archivo
-    		mov r0, r6                            @ Descriptor del archivo
-    		mov r7, #6                            @ Syscall: close
-    		swi 0                                 @ Llama al sistema operativo para cerrar el archivo
-
-    		pop {r0, r1, r2, r6, r7, lr}          @ Restaura registros
-    		bx lr                                 @ Retorna
-		.fnend
-
-
-		@calcula la longitud en r2
-	calcular_longitud_del_buffer:
-	.fnstart
-
-	    	push {r0, r1, r3}
-    		ldr r0, =buffer
-    		mov r2, #0
-
-    		calcular_longitud:  
-        	ldrb r3, [r0, r2]                @ Lee un byte del buffer
-        	cmp r3, #0                       @ Compara con terminador nulo
-        	beq final_del_buffer             @ Salta si encuentra el final
-        	add r2, r2, #1                   @ Incrementa la longitud
-        	b calcular_longitud              @ Repite el ciclo
-    		final_del_buffer:
-    		pop {r0, r1, r3}
-    		bx lr                                @ Retorna
-	.fnend
-
-
-@---------------------------------------------------------------------
+
+
+// Subrutina para formatear rankingActual
+        formato_ranking_actual:
+        .fnstart
+                push {r0, r1, r2, r3, lr}              // Guarda registros usados, incluyendo LR
+
+                ldr r0, =rankingActual                 // Direcci�n del buffer de rankingActual
+                ldr r2, =nombre
+
+                ldr r3, =rankingLength
+                ldr r3, [r3]
+                sub r3, #3
+                bl copiar_nombre_con_puntos            // Copia el nombre alineado a la derecha con puntos
+
+                ldr r0, =rankingActual                 // Reinicia el puntero al inicio del buffer
+                ldr r1, =puntaje_ascii                         // Direcci�n del valor
+                mov r3, #3                             // Longitud del valor (3 caracteres)
+                bl copiar_valor                        // Copia los 3 caracteres del valor al inicio
+
+                pop {r0, r1, r2, r3, lr}               // Restaura registros, incluyendo LR
+                bx lr                                  // Retorna
+        .fnend
+
+
+
+// Subrutina para copiar el valor al buffer
+        copiar_valor:
+        .fnstart
+                push {r0, r1, r3, r4 ,lr}              // Guarda LR antes de cualquier llamada
+
+                copiar_valor_loop:
+                ldrb r4, [r1], #1                      // Lee un byte del valor y avanza
+                strb r4, [r0], #1                      // Escribe el byte en el destino y avanza
+                subs r3, r3, #1                        // Decrementa el contador
+                bne copiar_valor_loop                  // Repite si no ha terminado
+
+                pop {r0, r1, r3, r4 ,lr}               // Restaura LR
+                bx lr                                  // Retorna
+        .fnend
+
+
+
+// Subrutina para copiar el nombre al buffer con puntos
+        copiar_nombre_con_puntos:
+        .fnstart
+                push {r0, r1, r2, r3, r4, r5, r6, lr}   // Guarda registros usados, incluyendo LR
+
+                mov r1, r2                              // R1 apunta al nombre (R2 contiene la direcci�n del nombre)
+                mov r4, #0                              // �ndice para contar la longitud del nombre
+
+                contar_nombre:
+                ldrb r5, [r1, r4]                       // Lee un byte del nombre
+                cmp r5, #'\n'                           // Comprueba si es el salto de l�nea
+                beq rellenar_puntos                     // Salta si encuentra el salto de l�nea
+                add r4, r4, #1                          // Incrementa la longitud
+                cmp r4, r3                              // Compara con el l�mite de 19 (espacio disponible)
+                blt contar_nombre                       // Contin�a si no ha llegado al l�mite
+
+                rellenar_puntos:
+                sub r5, r3, r4                          // Calcula cu�ntos puntos necesita (r3 es 19)
+                rellenar_puntos_loop:
+                subs r5, r5, #1                         // Decrementa el contador de puntos
+                mov r6, #'.'                            // Carga el car�cter punto
+                strb r6, [r0], #1                       // Escribe un punto en el destino
+                bge rellenar_puntos_loop                // Repite si a�n quedan puntos por escribir
+
+                copiar_nombre_loop:
+                ldrb r6, [r1], #1                       // Lee un byte del nombre
+                cmp r6, #'\n'                           // Comprueba si es el salto de l�nea
+                beq copiar_salto_fin                    // Salta para copiar el salto de l�nea
+                strb r6, [r0], #1                       // Escribe el byte en el destino
+                subs r3, r3, #1                         // Decrementa la longitud disponible
+                bgt copiar_nombre_loop                  // Contin�a si a�n hay espacio
+
+                copiar_salto_fin:
+                strb r6, [r0], #1                        // Copia el salto de l�nea (`\n`) al destino
+
+                copiar_nombre_fin:
+                
+                pop {r0, r1, r2, r3, r4, r5, r6, lr}    // Restaura registros
+                bx lr                                   // Retorna
+        .fnend
+
+
+
+
+// Leer el archivo y cargar buffer
+        cargar_buffer:
+        .fnstart
+                push { r0, r1, r2, r4, r7, lr}
+                // Abrir el archivo
+                ldr r0, =filename                   // Direcci�n del nombre del archivo
+                mov r1, #0                          // Modo de apertura: lectura
+                mov r7, #5                          // Syscall 
+                swi 0                               // Llama al sistema operativo
+                mov r4, r0                          // Guarda el descriptor del archivo en r4
+
+                // Leer el contenido en el buffer
+                mov r0, r4                          // Descriptor del archivo
+                ldr r1, =buffer                     // Direcci�n del buffer
+                ldr r2, =bufferLength               // Tama�o m�ximo a leer
+                mov r7, #3                          // Syscall 
+                swi 0                               // Llama al sistema operativo
+
+                // Cerrar el archivo
+                mov r0, r4                          // Descriptor del archivo a cerrar
+                mov r7, #6                          // Syscall 
+                swi 0                               // Llama al sistema operativo
+
+                pop { r0, r1, r2, r4, r7, lr}
+                bx lr                               // Retorna de la subrutina
+        .fnend
+
+
+
+        incrementar_ranking_al_buffer:
+        .fnstart
+                push {r0, r1, r2, r3, r4, lr}      // Guarda registros usados, incluyendo LR
+
+                ldr r0, =buffer                    // R0 apunta al inicio del buffer
+                mov r1, r0                         // R1 ser� el puntero para encontrar el final
+
+                encontrar_final_buffer:
+                ldrb r2, [r1], #1                  // Lee un byte y avanza el puntero
+                cmp r2, #0                         // Comprueba si es el terminador nulo
+                bne encontrar_final_buffer         // Contin�a si no ha encontrado el terminador
+
+                sub r1, r1, #1                     // Corrige el puntero (�ltima posici�n v�lida antes del nulo)
+
+                ldr r3, =rankingActual             // R3 apunta al inicio de rankingActual
+
+                copiar_ranking_actual:
+                ldrb r2, [r3], #1                  // Lee un byte de rankingActual
+                cmp r2, #0                         // Comprueba si es el terminador nulo
+                beq terminar_copia                 // Salta si ha terminado de copiar
+
+                strb r2, [r1], #1                  // Copia el byte al buffer y avanza
+                b copiar_ranking_actual            // Repite el ciclo
+
+                terminar_copia:
+
+                pop {r0, r1, r2, r3, r4, lr}       // Restaura registros
+                bx lr                              // Retorna
+        .fnend
+
+
+        modificar_buffer_con_3_ultimos:
+        .fnstart
+                push {r0, r2, r3, r4, r5, r6, lr}           // Guarda registros usados y enlace
+                ldr r4, =buffer                     // r4 apunta al inicio del buffer
+                bl calcular_longitud_del_buffer
+                mov r5, r2                          // r5 contiene el tama�o del buffer (par�metro pasado en r2)
+                mov r2, #0                          // r2 llevar� el contador de saltos de l�nea encontrados
+                mov r3, #0                          // r3 llevar� el �ndice del cuarto salto de l�nea desde el final
+
+                contar_saltos:
+                subs r5, r5, #1                     // Decrementa el tama�o del buffer (recorremos desde el final)
+                blt fin_conteo                      // Si hemos recorrido todo el buffer, salir
+                ldrb r6, [r4, r5]                   // Carga el byte actual desde el buffer
+                cmp r6, #10                         // Compara el byte con el car�cter de salto de l�nea ('\n')
+                bne contar_saltos                   // Si no es un salto de l�nea, contin�a contando
+                add r2, r2, #1                      // Incrementa el contador de saltos de l�nea encontrados
+                cmp r2, #4                          // �Es el cuarto salto de l�nea?
+                bne contar_saltos                   // Si no, sigue contando
+                mov r3, r5                          // Guarda el �ndice del cuarto salto de l�nea desde el final
+                b fin_conteo                        // Finaliza el conteo
+
+                fin_conteo:
+                cmp r2, #4                          // �Encontramos al menos 4 saltos de l�nea?
+                blt retornar                        // Si no, no hay nada que modificar
+
+                modificar_buffer:           
+                add r6, r5, #1                      // Sumamos una posici�n
+                ldr r5, =buffer                     // r5 apunta al inicio del buffer original
+                add r6, r5                          // Simamos el puntero con el arranque del recorte
+
+                sobreescribir:
+                ldrb r0, [r6], #1                   // Carga un byte desde el nuevo contenido
+                strb r0, [r5], #1                   // Sobrescribe el buffer original
+                cmp r0, #0                          // Verifica si es el final del buffer (car�cter nulo)
+                bne sobreescribir                   // Contin�a sobrescribiendo mientras no sea el final
+
+                mov r0, #10
+                strb r0, [r5], #1                       // Sumamos un caracter nulo 
+
+                mov r0, #0
+                strb r0, [r5], #1                       // Sumamos un caracter nulo      
+
+                retornar:
+                pop {r0, r2, r3, r4, r5, r6, lr}            // Restaura registros
+                bx lr                               // Retorna
+        .fnend
+
+
+
+        modificar_rankings:
+        .fnstart
+                push {r0, r1, r2, r6, r7, lr}        // Guarda registros usados y LR
+
+                ldr r0, =filename                    // Direcci�n del nombre del archivo
+                mov r1, #2                           // Modo lectura/escritura (2)
+                mov r2, #438                         // Permisos (0666 en octal, pero no se usa para lectura/escritura)
+                mov r7, #5                           // Syscall: open
+                swi 0                                // Llama al sistema operativo para abrir el archivo
+                
+                mov r6, r0                           // Guardar el descriptor del archivo en r6
+
+
+                // Sobrescribir el archivo con el nuevo contenido del buffer
+                mov r0, r6                            // Descriptor del archivo
+                ldr r1, =buffer                       // Direcci�n del buffer
+                bl calcular_longitud_del_buffer       // En r2 queda la longitud del buffer
+
+                escribir_archivo:
+                        mov r7, #4                       // Syscall: `write` (4 en ARM Linux)
+                        swi #0
+
+                mov r7, #4                            // Syscall: write
+                swi 0                                 // Llama al sistema operativo para escribir el contenido modificado
+
+                // Cerrar el archivo
+                mov r0, r6                            // Descriptor del archivo
+                mov r7, #6                            // Syscall: close
+                swi 0                                 // Llama al sistema operativo para cerrar el archivo
+
+                pop {r0, r1, r2, r6, r7, lr}          // Restaura registros
+                bx lr                                 // Retorna
+        .fnend
+
+
+//calcula la longitud en r2
+        calcular_longitud_del_buffer:
+        .fnstart
+                push {r0, r1, r3}
+                ldr r0, =buffer
+                mov r2, #0
+
+                calcular_longitud:  
+                        ldrb r3, [r0, r2]              // Lee un byte del buffer
+                        cmp r3, #0                     // Compara con terminador nulo
+                        beq final_del_buffer           // Salta si encuentra el final
+                        add r2, r2, #1                 // Incrementa la longitud
+                        b calcular_longitud            // Repite el ciclo
+                final_del_buffer:
+                pop {r0, r1, r3}
+                bx lr                                  // Retorna
+        .fnend
+//-------------------------------------------------------------------------------------------
 
 .global main
         main:
-		ldr r11, =buffer
 
                 funcion_imprime_mensaje_comienzo_juego:
                         bl imprime_mensaje_comienzo_juego
@@ -1054,81 +1015,105 @@
                 funcion_ingrese_palabra:                //imprime un mensaje con la cantidad de letras a ingresar
                         bl ingrese_palabra
 			bl reinicia_mensaje_ingrese
-		funcion_imprime_palabra_random:
-			ldr r1, =letras_palabra_random
-			ldrb r2, [r1]
-			bl imprime_palabra_random
+//		funcion_imprime_palabra_random:
+//			ldr r1, =letras_palabra_random
+//			ldrb r2, [r1]
+//			bl imprime_palabra_random
 
-        verificar_largo:
-                bl leer_palabra                         //usuario ingresa palabra
-                bl calcula_letras_usuario               //se calculan las letras de la palabra del usuario
-                ldr r0, =letras_palabra_random		//cargo puntero del largo de la palabra random
-                ldrb r1, [r0]				//cargo el largo de la palabra random
-                ldr r2, =letras_palabra_usuario		//cargo el puntero del largo de la palabra del usuario
-                ldrb r3, [r2]				//cargo el largo de la palabra del usuario
-                cmp r3, r1                              //comparo el largo de la palabra a buscar y la palabra del usuario
-                bgt palabra_mas_larga			//si es mas larga salta a palabra_mas_larga
-                blt palabra_mas_corta			//si es mas corta salta a palabra_mas_corta
-                bl informar_resultado			//si tiene el largo correcto se verifica si las letras tienen que ser rojas,amarillas o verdes
-		bl imprimir_resultado			//se pasa por pantalla la palabra con las letras con colores
-		bl compara_palabras			//compara letra por letra ambas palabras
-		cmp r0, #1				//si r0 vuelve en 1 de compara_palabras significa que la palabra ingresada es correcta
-		beq fin_juego_ganaste			//si r0 vale 1 salta a fin_juego_ganaste
-		ldr r0, =intentos			//cargo puntero de intentos
-		ldrb r1, [r0]				//cargo los intentos restantes
-		cmp r1, #0
-		beq fin_juego_perdiste			//si los intentos llegan a 0 salta a fin_juego_perdiste
-		bgt verificar_largo			//si los intentos son mayores a 0 se pide otra palabra al usuario
-        palabra_mas_larga:
-                bl mensaje_mas_largo                    //mensaje si la palabra es mas larga
-                bal verificar_largo                     //pide ingresar palabra nuevamente
-        palabra_mas_corta:
-                bl mensaje_mas_corto                    //mensaje si la palabra es mas corta
-                bal verificar_largo                     //pide ingresar la palabra nuevamente
-	fin_juego_ganaste:
-		bl calcula_puntos			//se calculan los puntos adquiridos
-		bl convierte_puntos			//los puntos se pasan a ascii
-		ldr r0, =mensaje_puntaje_ganaste	//cargo puntero del mensaje que se muetra al ganar
-		bl modifica_mensaje_puntos		//lo modifico para incluír el puntaje logrado
-		ldr r1, =mensaje_puntaje_ganaste	//cargo el puntero del mensaje que se muetra al ganar
-		mov r2, #49				//cargo en r2 el largo del mensaje
-		bl imprime_mensaje_puntos		//imprimo el mensaje ganador
-		bl reinicia_mensaje_puntaje_ganaste	//vuelvo a poner x en las posiciones donde va el puntaje en el mensaje
-		ldr r0, =intentos			//cargo el puntero de intentos
-		mov r1, #5
-		strb r1, [r0]				//reinicio el contador de intentos a 5
-		bal seguir_jugando
-	fin_juego_perdiste:				//todos los comentarios de fin_juego_ganaste aplican acá pero para el mensaje cuando perdes
-                bl calcula_puntos
-                bl convierte_puntos
-		ldr r0, =mensaje_puntaje_perdiste
-                bl modifica_mensaje_puntos
-		ldr r1, =mensaje_puntaje_perdiste
-		mov r2, #29
-                bl imprime_mensaje_puntos
-		bl reinicia_mensaje_puntaje_perdiste
-		ldr r0, =intentos
-		mov r1, #5
-		strb r1, [r0]
+                verificar_largo:
+                        bl leer_palabra                         //usuario ingresa palabra
+                        bl calcula_letras_usuario               //se calculan las letras de la palabra del usuario
+                        ldr r0, =letras_palabra_random		//cargo puntero del largo de la palabra random
+                        ldrb r1, [r0]				//cargo el largo de la palabra random
+                        ldr r2, =letras_palabra_usuario		//cargo el puntero del largo de la palabra del usuario
+                        ldrb r3, [r2]				//cargo el largo de la palabra del usuario
+                        cmp r3, r1                              //comparo el largo de la palabra a buscar y la palabra del usuario
+                        bgt palabra_mas_larga			//si es mas larga salta a palabra_mas_larga
+                        blt palabra_mas_corta			//si es mas corta salta a palabra_mas_corta
+                        bl informar_resultado			//si tiene el largo correcto se verifica si las letras tienen que ser rojas,amarillas o verdes
+                        bl imprimir_resultado			//se pasa por pantalla la palabra con las letras con colores
+                        bl compara_palabras			//compara letra por letra ambas palabras
+                        cmp r0, #1				//si r0 vuelve en 1 de compara_palabras significa que la palabra ingresada es correcta
+                        beq fin_juego_ganaste			//si r0 vale 1 salta a fin_juego_ganaste
+                        ldr r0, =intentos			//cargo puntero de intentos
+                        ldrb r1, [r0]				//cargo los intentos restantes
+                        cmp r1, #0
+                        beq fin_juego_perdiste			//si los intentos llegan a 0 salta a fin_juego_perdiste
+                        bl verificar_intentos			//pasa por pantalla la cantidad de intentos restantes
+                        bgt verificar_largo			//si los intentos son mayores a 0 se pide otra palabra al usuario
+                palabra_mas_larga:
+                        bl mensaje_mas_largo                    //mensaje si la palabra es mas larga
+                        bal verificar_largo                     //pide ingresar palabra nuevamente
+                palabra_mas_corta:
+                        bl mensaje_mas_corto                    //mensaje si la palabra es mas corta
+                        bal verificar_largo                     //pide ingresar la palabra nuevamente
+                fin_juego_ganaste:
+                        push {r0}				//guardo el número que indica que se adivinó la palabra
+                        bl calcula_puntos			//se calculan los puntos adquiridos
+                        bl convierte_puntos			//los puntos se pasan a ascii
+                        ldr r0, =mensaje_puntaje_ganaste	//cargo puntero del mensaje que se muetra al ganar
+                        bl modifica_mensaje_puntos		//lo modifico para incluír el puntaje logrado
+                        ldr r1, =mensaje_puntaje_ganaste	//cargo el puntero del mensaje que se muetra al ganar
+                        mov r2, #49				//cargo en r2 el largo del mensaje
+                        bl imprime_mensaje_puntos		//imprimo el mensaje ganador
+                        bl reinicia_mensaje_puntaje_ganaste	//vuelvo a poner x en las posiciones donde va el puntaje en el mensaje
+                        ldr r0, =intentos			//cargo el puntero de intentos
+                        mov r1, #5
+                        strb r1, [r0]				//reinicio el contador de intentos a 5
+                                
+                        funcion_pedir_nombre:
+                        ldr r1, =mensaje_ingrese_nombre	        // Buffer dende almacenamos el mensaje
+                        ldr r2, =mensaje_ing_nombre_length         // Largo del mensaje
+                        bl imprimir_por_consola
+                        bl ingresar_nombre
+                        bl formato_ranking_actual                  //Formatear rankingActual
+                        
+                        funcion_manipulacion_del_ranking_txt:           //tomar datos del .txt y imprimirlo
+                        bl cargar_buffer
+                        bl incrementar_ranking_al_buffer
+                        bl modificar_buffer_con_3_ultimos
 
-		@pedir los valores del usuario y imprimirlo
-    		bl pedir_nombre
-    		bl pedir_valor
-    		bl formato_ranking_actual              @ Formatear rankingActual
-    		bl imprimir_ranking_actual
+                        funcion_imprimir_ranking:
+                        ldr r1, =mensaje_ranking_de_jugadores	// Buffer dende almacenamos el mensaje
+                        ldr r2, =mensaje_ranking_length            // Largo del mensaje
+                        bl imprimir_por_consola
 
-		@tomar datos del .txt y imprimirlo
-   		bl cargar_buffer
-    		bl incrementar_ranking_al_buffer
+                        ldr r1, =buffer                            // Carga en r1 la direcci�n de la variable `rankingActual`.
+                        mov r2, #64                                // Carga en r2 el tama�o del buffer.
+                        bl imprimir_por_consola
 
-    		bl modificar_buffer_con_3_ultimos
+                        funcion_modificar_archivo_txt:
+                        bl modificar_rankings
 
-    		bl imprimir_rankings
+                        funcion_gano_fin:
+                                pop {r0}				//restaruro r0
+                                cmp r0, #1				//si es igual a 1 termina el programa
+                                beq fin
 
-    		bl modificar_rankings
+                        funcion_seguir_jugando:
+                        bal seguir_jugando
 
-	fin:
-                mov r7, #1
-                swi 0
+                fin_juego_perdiste:				//todos los comentarios de fin_juego_ganaste aplican acá pero para el mensaje cuando perdes
+                        bl calcula_puntos
+                        bl convierte_puntos
+                        ldr r0, =mensaje_puntaje_perdiste
+                        bl modifica_mensaje_puntos
+                        ldr r1, =mensaje_puntaje_perdiste
+                        mov r2, #29
+                        bl imprime_mensaje_puntos
+                        bl reinicia_mensaje_puntaje_perdiste
+                        ldr r0, =intentos
+                        mov r1, #5
+                        strb r1, [r0]
+                        ldr r0, =puntaje			//cargo el puntero del puntaje
+                        mov r1, #0
+                        strb r1, [r0]				//dejo en 0 el puntaje
+                        strb r1, [r0, #1]
+                        strb r1, [r0, #2]
+                        bl funcion_seguir_jugando
+
+                fin:
+                        mov r7, #1
+                        swi 0
 
 
